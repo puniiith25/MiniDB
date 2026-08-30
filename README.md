@@ -2,6 +2,8 @@
 
 > **A crash-safe, zero-dependency relational database engine built from scratch in Python.**
 
+**Live Web Management Studio**: [https://mini-db.vercel.app](https://mini-db.vercel.app)
+
 MiniDB is built for the **Zero Dependency Hackathon** (Track D: Data & Storage). It demonstrates deep database internals—persistent binary disk storage, in-memory offset indexing, write-ahead logging (WAL), crash recovery, SQL-like query parsing & execution, transactions, concurrency, and a client-server TCP architecture—using **only Python's standard library**.
 
 ---
@@ -130,7 +132,11 @@ make web
 
 ## Deployment Options
 
-### 1. Docker & Docker Compose (Recommended)
+### 1. Vercel (Live Production Serverless Demo)
+MiniDB is deployed serverless on Vercel with automatic REST API endpoints and Web Studio UI:
+**Live Link**: [https://mini-db.vercel.app](https://mini-db.vercel.app)
+
+### 2. Docker & Docker Compose
 ```bash
 # Option A: Using docker-compose
 docker-compose up -d
