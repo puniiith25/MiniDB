@@ -1,0 +1,12 @@
+Project: MiniDB
+Tagline: A crash-safe, zero-dependency relational database engine built from scratch in Python.
+Track: D - Data & Storage
+Runtime dependencies: NONE
+Third-party packages: NONE
+Database engines: NONE
+External services: NONE
+ORM: NONE
+Python standard library: YES
+sqlite3: NOT USED
+Python version: 3.14.3 (macOS darwin)
+Verification status: PASS (0 third-party packages installed or imported)
