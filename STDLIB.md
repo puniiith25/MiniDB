@@ -33,16 +33,23 @@ MiniDB uses **zero** third-party Python packages, zero PyPI dependencies, zero e
 ## Detailed Standard-Library Module Breakdown
 
 1. **`struct`**: Encodes and decodes primitive types (`INTEGER`, `TEXT`, `BOOLEAN`, `FLOAT`) and headers into compact binary disk records using fixed endianness (`>`).
-2. **`os` & `pathlib`**: File creation, path manipulation, file descriptor management, and `os.fsync()` for guaranteed disk persistence.
-3. **`io`**: Binary stream buffers for in-memory serialization and log replaying.
-4. **`threading` & `concurrent.futures`**: Concurrency locking (`Lock`, `RLock`) and thread pool execution for multi-client query isolation.
-5. **`socket` & `selectors`**: Multiplexed I/O database TCP server (`127.0.0.1:9000`) and TCP network client.
-6. **`re`**: Regular expression token matching in the SQL lexer.
-7. **`dataclasses`**: AST node representations and schema definitions with zero boilerplate.
-8. **`argparse` & `cmd`**: Command-line flag parsing and interactive SQL shell (`cmd.Cmd`).
-9. **`unittest`**: Comprehensive test suite covering binary encoding, WAL recovery, concurrency, SQL parser, and TCP protocol.
-10. **`time` & `datetime`**: High-precision execution benchmarking via `time.perf_counter()`.
-11. **`hashlib` & `zlib`**: Checksum validation for record integrity and corruption detection.
+2. **`os`**: File creation, low-level file descriptor operations, and `os.fsync()` for guaranteed disk persistence.
+3. **`pathlib`**: Object-oriented filesystem path manipulation and directory management.
+4. **`io`**: Binary stream buffers for in-memory serialization and log replaying.
+5. **`threading`**: Concurrency locking (`RLock`) for thread-safe database, index, and WAL access.
+6. **`concurrent.futures`**: Worker thread pool capabilities for concurrent query handling.
+7. **`socket`**: TCP socket server (`127.0.0.1:9000`) and network client for protocol communication.
+8. **`selectors`**: Multiplexed non-blocking socket I/O multiplexing.
+9. **`re`**: Regular expression token matching in the SQL lexer (`src/minidb/lexer.py`).
+10. **`dataclasses`**: AST node representations and schema definitions with zero boilerplate.
+11. **`json`**: Structured JSON serialization for table schema metadata and wire protocol payloads.
+12. **`argparse`**: Command-line flag parsing for server and CLI options.
+13. **`cmd`**: Interactive REPL shell loop (`src/minidb/cli.py`).
+14. **`unittest`**: Comprehensive unit and integration test framework (`tests/`).
+15. **`time`**: High-precision execution benchmarking via `time.perf_counter()`.
+16. **`zlib`**: CRC32 checksum computation (`zlib.crc32`) for record corruption detection.
+17. **`tempfile`**: Isolated temporary directory creation for test suites and benchmark runs.
+18. **`ast`**: Abstract Syntax Tree inspection for automated zero-dependency verification (`scripts/verify_zero_deps.py`).
 
 ---
 

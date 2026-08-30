@@ -56,22 +56,23 @@ Database Startup ──> Read WAL ──> Validate Records ──> Replay Operat
 
 ---
 
-## Features (Progressive Roadmap)
+## Completed Features
 
-- [x] Zero-dependency audit harness
-- [ ] Custom binary record serialization (`struct`)
-- [ ] Persistent append-only disk storage
-- [ ] In-memory index with file offset lookup
-- [ ] Schema definition & validation (`INTEGER`, `TEXT`, `BOOLEAN`)
-- [ ] SQL Lexer & Parser AST
-- [ ] Query Executor (`CREATE TABLE`, `INSERT`, `SELECT`, `DELETE`)
-- [ ] `WHERE` filtering engine (`=`, `!=`, `>`, `<`, `>=`, `<=`)
-- [ ] Write-Ahead Logging (WAL) with `os.fsync()` durability
-- [ ] Automated crash recovery on restart
-- [ ] ACID-style Transactions (`BEGIN`, `COMMIT`, `ROLLBACK`)
-- [ ] Thread-safe concurrency primitives
-- [ ] Client-Server TCP protocol over standard sockets
-- [ ] Interactive REPL CLI
+- [x] Zero-dependency AST verifier (`scripts/verify_zero_deps.py`)
+- [x] Custom binary record format (`struct`, CRC32 checksums)
+- [x] Persistent append-only disk storage (`open`, `read`, `write`, `seek`, `tell`, `os.fsync`)
+- [x] In-memory index with file offset lookup (`PrimaryIndex`)
+- [x] Schema definition & validation (`INTEGER`, `TEXT`, `BOOLEAN`, `FLOAT`)
+- [x] Hand-rolled SQL Lexer & Parser AST (`CREATE TABLE`, `INSERT`, `SELECT`, `DELETE`)
+- [x] Query Executor with `WHERE` predicate filtering (`=`, `!=`, `>`, `<`, `>=`, `<=`)
+- [x] Write-Ahead Logging (WAL) with `os.fsync()` durability
+- [x] Automated crash recovery on restart (`RecoveryManager`)
+- [x] ACID-style Transactions (`BEGIN`, `COMMIT`, `ROLLBACK`)
+- [x] Thread-safe concurrency primitives (`threading.RLock`)
+- [x] Client-Server TCP protocol over standard sockets (`socket`, `selectors`)
+- [x] Interactive REPL CLI (`python3 -m minidb`)
+- [x] Performance benchmark script (`scripts/benchmark.py`)
+- [x] Reproducible 13-step demonstration (`scripts/demo.py`)
 
 ---
 
@@ -109,6 +110,15 @@ make demo
 make benchmark
 ```
 
+### Run TCP Server & CLI Shell
+```bash
+# Terminal 1: Start Database Server
+make server
+
+# Terminal 2: Start Interactive SQL Shell
+python3 -m minidb
+```
+
 ---
 
 ## Hackathon Compliance
@@ -117,7 +127,7 @@ make benchmark
 | :--- | :--- | :--- |
 | **Zero Third-Party Runtime Deps** | **PASS** | Verified via AST scanner (`scripts/verify_zero_deps.py`). |
 | **No SQLite Usage** | **PASS** | `sqlite3` is prohibited and scanned in source/tests. |
-| **Standard Library Only** | **PASS** | Uses `struct`, `os`, `socket`, `selectors`, `re`, `threading`, `unittest`. |
+| **Standard Library Only** | **PASS** | Uses `struct`, `os`, `socket`, `re`, `threading`, `unittest`, `zlib`. |
 | **One-Command Execution** | **PASS** | Supported via `make demo` and `make test`. |
 
 ---
@@ -126,4 +136,4 @@ make benchmark
 
 - **Educational Focus**: MiniDB is built for system understanding and hackathon verification, not multi-terabyte production data warehouses.
 - **Transaction Model**: Page-level and table-level lock serialization rather than full multi-version concurrency control (MVCC).
-- **SQL Subset**: Supports a documented subset of SQL (`CREATE TABLE`, `INSERT`, `SELECT ... WHERE`, `DELETE ... WHERE`).
+- **SQL Subset**: Supports a documented subset of SQL (`CREATE TABLE`, `INSERT`, `SELECT ... WHERE`, `DELETE ... WHERE`, `BEGIN`, `COMMIT`, `ROLLBACK`).
