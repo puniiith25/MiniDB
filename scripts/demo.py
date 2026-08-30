@@ -18,6 +18,7 @@ Demonstrates all 13 core database engine features:
 13. TCP client
 """
 
+import socket
 import sys
 import tempfile
 import time
@@ -146,11 +147,15 @@ def run_demo():
 
         # Step 12 & 13: TCP Server & TCP Client
         print_step(12, "TCP Database Server & Client Networking")
-        server = Server(data_dir=db_dir, host="127.0.0.1", port=9555)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(("127.0.0.1", 0))
+            demo_port = s.getsockname()[1]
+
+        server = Server(data_dir=db_dir, host="127.0.0.1", port=demo_port)
         server.start(background=True)
         time.sleep(0.1)
 
-        client = Client(host="127.0.0.1", port=9555)
+        client = Client(host="127.0.0.1", port=demo_port)
         client.connect()
 
         tcp_resp = client.execute_sql("SELECT name, age FROM users WHERE age >= 30;")

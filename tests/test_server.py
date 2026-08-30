@@ -2,6 +2,8 @@
 Unit & Integration tests for TCP Database Server & Client (src/minidb/server.py).
 """
 
+import os
+import socket
 import sys
 import tempfile
 import time
@@ -16,11 +18,17 @@ from minidb.server import Server
 from minidb.client import Client
 
 
+def get_free_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("127.0.0.1", 0))
+        return s.getsockname()[1]
+
+
 class TestTCPServer(unittest.TestCase):
 
     def setUp(self):
         self.temp_dir = tempfile.TemporaryDirectory()
-        self.port = 9876  # Ephemeral test port
+        self.port = get_free_port()
         self.server = Server(data_dir=self.temp_dir.name, host="127.0.0.1", port=self.port)
         self.server.start(background=True)
         time.sleep(0.1)  # Allow socket bind

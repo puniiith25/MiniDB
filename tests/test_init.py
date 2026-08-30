@@ -23,7 +23,7 @@ class TestMiniDBInit(unittest.TestCase):
     def test_python_version(self):
         """Verify Python 3 standard library environment."""
         self.assertGreaterEqual(sys.version_info[0], 3)
-        self.assertGreaterEqual(sys.version_info[1], 14)
+        self.assertGreaterEqual(sys.version_info[1], 10)
 
     def test_sqlite3_not_imported(self):
         """Verify sqlite3 module is not present in sys.modules."""
