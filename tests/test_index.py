@@ -60,7 +60,10 @@ class TestPrimaryIndex(unittest.TestCase):
         self.assertEqual(self.index.get("user1"), off3)
 
         # Read directly from storage using index offset
-        rec = self.storage.read_record_at(self.index.get("user1"))
+        offset = self.index.get("user1")
+        self.assertIsNotNone(offset)
+        assert offset is not None
+        rec = self.storage.read_record_at(offset)
         self.assertEqual(rec.value, "Punith V2")
 
 

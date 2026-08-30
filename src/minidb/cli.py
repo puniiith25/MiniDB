@@ -81,7 +81,7 @@ class MiniDBCli(cmd.Cmd):
 
     def _display_response(self, resp: dict) -> None:
         if resp.get("status") == "ERROR":
-            print(f"❌ Error: {resp.get('error')}")
+            print(f"Error: {resp.get('error')}")
             return
 
         cols = resp.get("columns")
@@ -95,7 +95,7 @@ class MiniDBCli(cmd.Cmd):
             else:
                 print("Empty set (0 rows returned)\n")
         elif msg:
-            print(f"✅ {msg}\n")
+            print(f"OK: {msg}\n")
 
 
 def main():

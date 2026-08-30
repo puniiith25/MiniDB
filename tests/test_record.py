@@ -34,11 +34,11 @@ class TestRecordFormat(unittest.TestCase):
             self.assertEqual(decoded_rec.value, rec.value)
 
     def test_unicode_records(self):
-        rec = Record(RecordType.INSERT, "user_🔥", "Punith 🚀 Database Engine")
+        rec = Record(RecordType.INSERT, "user_café", "Punith Database Engine (nombres: José, Señor)")
         binary = rec.serialize()
         decoded, bytes_read = Record.deserialize_from_bytes(binary)
-        self.assertEqual(decoded.key, "user_🔥")
-        self.assertEqual(decoded.value, "Punith 🚀 Database Engine")
+        self.assertEqual(decoded.key, "user_café")
+        self.assertEqual(decoded.value, "Punith Database Engine (nombres: José, Señor)")
 
     def test_corrupted_magic_header(self):
         rec = Record(RecordType.INSERT, "key1", "val1")

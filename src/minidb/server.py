@@ -38,7 +38,7 @@ class Server:
         self.server_socket.listen(128)
         self.is_running = True
 
-        print(f"🚀 MiniDB Server started at tcp://{self.host}:{self.port} (data_dir: {self.data_dir})")
+        print(f"MiniDB Server started at tcp://{self.host}:{self.port} (data_dir: {self.data_dir})")
 
         if background:
             t = threading.Thread(target=self._listen_loop, daemon=True)

@@ -54,7 +54,7 @@ def run_benchmark(num_records: int = 5000, num_runs: int = 100):
             executor.execute(Parser(sql).parse())
         insert_duration = time.perf_counter() - start_insert
 
-        print(f"✅ Inserted {num_records:,} records in {insert_duration:.3f} seconds ({num_records/insert_duration:.0f} ops/sec)\n")
+        print(f"Inserted {num_records:,} records in {insert_duration:.3f} seconds ({num_records/insert_duration:.0f} ops/sec)\n")
 
         target_id = num_records // 2
         target_name = f"User_{target_id}"

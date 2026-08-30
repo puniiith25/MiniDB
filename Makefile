@@ -1,4 +1,4 @@
-.PHONY: all test verify demo benchmark server clean
+.PHONY: all test verify demo benchmark server cli web clean
 
 PYTHON ?= python3
 
@@ -18,6 +18,12 @@ benchmark:
 
 server:
 	PYTHONPATH=src $(PYTHON) -m minidb.server
+
+cli:
+	PYTHONPATH=src $(PYTHON) -m minidb
+
+web:
+	PYTHONPATH=src $(PYTHON) -m minidb.web
 
 clean:
 	rm -rf data/*.db data/*.wal data/*.log

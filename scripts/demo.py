@@ -46,7 +46,7 @@ def print_step(step_num: int, title: str):
 
 
 def run_demo():
-    print("🚀 Starting MiniDB Reproducible Demonstration...")
+    print("Starting MiniDB Demonstration...")
 
     with tempfile.TemporaryDirectory() as temp_dir:
         db_dir = Path(temp_dir) / "demo_data"
@@ -56,7 +56,7 @@ def run_demo():
         print_step(1, "Create Database")
         db = Database(db_dir)
         tm = TransactionManager(db)
-        print(f"✅ Database initialized in directory: {db_dir}")
+        print(f"Database initialized in directory: {db_dir}")
 
         # Step 2: Create Table
         print_step(2, "Create Table")
@@ -75,7 +75,7 @@ def run_demo():
         for sql in inserts:
             tm.execute_sql_query(Parser(sql).parse())
             print(f"SQL: {sql}")
-        print("✅ 3 rows inserted into 'users' table.")
+        print("3 rows inserted into 'users' table.")
 
         # Step 4: Select Data
         print_step(4, "Select Data")
@@ -140,7 +140,7 @@ def run_demo():
         crashed_db = Database(db_dir)
         recovery_mgr = RecoveryManager(crashed_db, wal)
         replayed = recovery_mgr.recover()
-        print(f"✅ Recovery complete! Replayed {replayed} transaction operations from WAL log.")
+        print(f"Recovery complete! Replayed {replayed} transaction operations from WAL log.")
 
         res_recovery = QueryExecutor(crashed_db).execute(Parser("SELECT * FROM users WHERE id = 5;").parse())
         print(f"  Recovered Row (id = 5): {res_recovery.rows[0]}")
@@ -166,7 +166,7 @@ def run_demo():
         server.stop()
 
         print("\n==================================================")
-        print(" 🎉 MINIDB DEMONSTRATION COMPLETED SUCCESSFULLY!")
+        print(" MINIDB DEMONSTRATION COMPLETED SUCCESSFULLY!")
         print("==================================================")
 
 

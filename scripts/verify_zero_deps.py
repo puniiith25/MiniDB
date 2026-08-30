@@ -42,7 +42,8 @@ STDLIB_MODULES = {
     "concurrent", "socket", "selectors", "hashlib", "hmac", "time",
     "datetime", "uuid", "logging", "tempfile", "shutil", "zlib", "ast",
     "importlib", "traceback", "signal", "math", "random", "enum", "functools",
-    "itertools", "contextlib", "copy", "abc", "string", "site", "builtins"
+    "itertools", "contextlib", "copy", "abc", "string", "site", "builtins",
+    "http", "urllib"
 }
 
 
@@ -111,13 +112,13 @@ def main():
             all_violations.extend(file_violations)
 
     if all_violations:
-        print("❌ ZERO-DEPENDENCY AUDIT FAILED!")
+        print("ZERO-DEPENDENCY AUDIT FAILED!")
         print("Violations found:")
         for v in all_violations:
             print(f"  - {v}")
         sys.exit(1)
     else:
-        print("✅ ZERO-DEPENDENCY AUDIT PASSED!")
+        print("ZERO-DEPENDENCY AUDIT PASSED!")
         print("  - Zero third-party packages detected.")
         print("  - sqlite3 module NOT used anywhere.")
         print("  - Python Standard Library compliance: 100%\n")

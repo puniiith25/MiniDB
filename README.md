@@ -116,7 +116,35 @@ make benchmark
 make server
 
 # Terminal 2: Start Interactive SQL Shell
-python3 -m minidb
+make cli
+# Or: PYTHONPATH=src python3 -m minidb
+```
+
+### Run Web Management Studio (Browser UI)
+```bash
+make web
+# Open http://localhost:8080 in your browser
+```
+
+---
+
+## Deployment Options
+
+### 1. Docker & Docker Compose (Recommended)
+```bash
+# Option A: Using docker-compose
+docker-compose up -d
+
+# Option B: Direct Docker run
+docker build -t minidb .
+docker run -d -p 8080:8080 -v minidb_data:/app/data --name minidb minidb
+```
+Open **`http://localhost:8080`** in your browser.
+
+### 2. Cloud VPS / Render / Fly.io / Railway
+Deploy MiniDB to any cloud provider by setting the startup command to:
+```bash
+PYTHONPATH=src python3 -m minidb.web --host 0.0.0.0 --port 8080 --data-dir ./data
 ```
 
 ---

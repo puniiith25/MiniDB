@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  minidb-web:
+    build: .
+    container_name: minidb_web_studio
+    ports:
+      - "8080:8080"
+    volumes:
+      - minidb_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  minidb_data:
+    driver: local
