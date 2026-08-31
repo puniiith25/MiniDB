@@ -12,6 +12,7 @@ from minidb.database import Database, Table
 from minidb.parser import (
     ASTQuery,
     CreateTableQuery,
+    DropTableQuery,
     InsertQuery,
     SelectQuery,
     DeleteQuery,
@@ -42,6 +43,8 @@ class QueryExecutor:
         """Dispatch query execution to specific AST handler."""
         if isinstance(query, CreateTableQuery):
             return self._execute_create_table(query)
+        elif isinstance(query, DropTableQuery):
+            return self._execute_drop_table(query)
         elif isinstance(query, InsertQuery):
             return self._execute_insert(query)
         elif isinstance(query, SelectQuery):
@@ -52,9 +55,18 @@ class QueryExecutor:
             raise DatabaseError(f"Executor received unhandled query node type: {type(query).__name__}")
 
     def _execute_create_table(self, query: CreateTableQuery) -> QueryResult:
+        if query.if_not_exists and self.db.has_table(query.table_name):
+            return QueryResult(message=f"Table '{query.table_name}' already exists (skipped).")
         schema = TableSchema(name=query.table_name, columns=query.columns)
-        self.db.create_table(schema)
+        self.db.create_table(schema, if_not_exists=query.if_not_exists)
         return QueryResult(message=f"Table '{query.table_name}' created successfully.")
+
+    def _execute_drop_table(self, query: DropTableQuery) -> QueryResult:
+        dropped = self.db.drop_table(query.table_name, if_exists=query.if_exists)
+        if dropped:
+            return QueryResult(message=f"Table '{query.table_name}' dropped successfully.")
+        else:
+            return QueryResult(message=f"Table '{query.table_name}' does not exist (skipped).")
 
     def _execute_insert(self, query: InsertQuery) -> QueryResult:
         table = self.db.get_table(query.table_name)

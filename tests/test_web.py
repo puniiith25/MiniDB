@@ -116,6 +116,37 @@ class TestWebStudioAPI(unittest.TestCase):
             self.assertEqual(res_json["tables_count"], 1)
             self.assertEqual(res_json["total_rows"], 1)
 
+        # 7. DELETE /api/tables?table=items (REST Endpoint for drop)
+        req_del_rest = urllib.request.Request(f"{base_url}/api/tables?table=items", method="DELETE")
+        with urllib.request.urlopen(req_del_rest) as resp:
+            self.assertEqual(resp.status, 200)
+            res_json = json.loads(resp.read().decode("utf-8"))
+            self.assertEqual(res_json["status"], "OK")
+
+        # Verify table list is empty now
+        req_tbls_empty = urllib.request.Request(f"{base_url}/api/tables")
+        with urllib.request.urlopen(req_tbls_empty) as resp:
+            res_json = json.loads(resp.read().decode("utf-8"))
+            self.assertEqual(len(res_json["tables"]), 0)
+
+    def test_uninitialized_db_handling(self):
+        base_url = f"http://{self.host}:{self.port}"
+        # Temporarily set db to None to test uninitialized handling
+        original_db = MiniDBHTTPRequestHandler.db
+        try:
+            MiniDBHTTPRequestHandler.db = None
+            req = urllib.request.Request(f"{base_url}/api/tables?table=items", method="DELETE")
+            try:
+                urllib.request.urlopen(req)
+                self.fail("Should have raised HTTPError 500")
+            except urllib.error.HTTPError as e:
+                self.assertEqual(e.code, 500)
+                body = json.loads(e.read().decode("utf-8"))
+                self.assertEqual(body["error"], "Database is not initialized")
+                e.close()
+        finally:
+            MiniDBHTTPRequestHandler.db = original_db
+
 
 if __name__ == "__main__":
     unittest.main()

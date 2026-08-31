@@ -13,6 +13,7 @@ if str(SRC_DIR) not in sys.path:
 from minidb.parser import (
     Parser,
     CreateTableQuery,
+    DropTableQuery,
     InsertQuery,
     SelectQuery,
     DeleteQuery,
@@ -34,9 +35,34 @@ class TestParser(unittest.TestCase):
 
         self.assertIsInstance(ast, CreateTableQuery)
         self.assertEqual(ast.table_name, "users")
+        self.assertFalse(ast.if_not_exists)
         self.assertEqual(len(ast.columns), 4)
         self.assertEqual(ast.columns[0].name, "id")
         self.assertTrue(ast.columns[0].primary_key)
+
+    def test_parse_create_table_if_not_exists(self):
+        sql = "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT);"
+        parser = Parser(sql)
+        ast = parser.parse()
+
+        self.assertIsInstance(ast, CreateTableQuery)
+        self.assertEqual(ast.table_name, "users")
+        self.assertTrue(ast.if_not_exists)
+
+    def test_parse_drop_table(self):
+        sql = "DROP TABLE users;"
+        parser = Parser(sql)
+        ast = parser.parse()
+
+        self.assertIsInstance(ast, DropTableQuery)
+        self.assertEqual(ast.table_name, "users")
+        self.assertFalse(ast.if_exists)
+
+        sql_if = "DROP TABLE IF EXISTS users;"
+        ast_if = Parser(sql_if).parse()
+        self.assertIsInstance(ast_if, DropTableQuery)
+        self.assertEqual(ast_if.table_name, "users")
+        self.assertTrue(ast_if.if_exists)
 
     def test_parse_insert(self):
         sql = "INSERT INTO users VALUES (1, 'Punith', 22, TRUE);"

@@ -96,14 +96,35 @@ class Database:
                 # Log schema loading warning
                 pass
 
-    def create_table(self, schema: TableSchema) -> Table:
+    def create_table(self, schema: TableSchema, if_not_exists: bool = False) -> Table:
         """Create a new database table."""
         if schema.name in self.tables:
+            if if_not_exists:
+                return self.tables[schema.name]
             raise DatabaseError(f"Table '{schema.name}' already exists")
 
         table = Table(self.data_dir, schema)
         self.tables[schema.name] = table
         return table
+
+    def drop_table(self, table_name: str, if_exists: bool = False) -> bool:
+        """Drop a database table and remove its storage files."""
+        if table_name not in self.tables:
+            if if_exists:
+                return False
+            raise DatabaseError(f"Table '{table_name}' does not exist")
+
+        self.tables.pop(table_name, None)
+
+        db_file = self.data_dir / f"{table_name}.db"
+        schema_file = self.data_dir / f"{table_name}.schema.json"
+
+        if db_file.exists():
+            db_file.unlink()
+        if schema_file.exists():
+            schema_file.unlink()
+
+        return True
 
     def get_table(self, table_name: str) -> Table:
         """Retrieve table instance by name."""

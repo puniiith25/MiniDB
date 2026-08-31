@@ -14,6 +14,7 @@ from minidb.schema import TableSchema
 from minidb.parser import (
     ASTQuery,
     CreateTableQuery,
+    DropTableQuery,
     InsertQuery,
     SelectQuery,
     DeleteQuery,
@@ -68,6 +69,9 @@ class TransactionManager:
         # Active transaction mode: buffer DML operations
         if isinstance(query, CreateTableQuery):
             raise TransactionError("DDL CREATE TABLE is not permitted inside an active transaction")
+
+        elif isinstance(query, DropTableQuery):
+            raise TransactionError("DDL DROP TABLE is not permitted inside an active transaction")
 
         elif isinstance(query, InsertQuery):
             return self._tx_insert(query)

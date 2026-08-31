@@ -32,6 +32,9 @@ class TokenType(Enum):
     AND = auto()
     OR = auto()
     LIMIT = auto()
+    DROP = auto()
+    IF = auto()
+    EXISTS = auto()
 
     # Types
     TYPE_INTEGER = auto()
@@ -65,6 +68,9 @@ class TokenType(Enum):
 KEYWORDS = {
     "CREATE": TokenType.CREATE,
     "TABLE": TokenType.TABLE,
+    "DROP": TokenType.DROP,
+    "IF": TokenType.IF,
+    "EXISTS": TokenType.EXISTS,
     "INSERT": TokenType.INSERT,
     "INTO": TokenType.INTO,
     "VALUES": TokenType.VALUES,

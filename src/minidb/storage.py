@@ -60,38 +60,44 @@ class StorageEngine:
             return
 
         file_size = self.get_file_size()
+        if file_size == 0:
+            return
 
         with open(self.file_path, "rb") as f:
+            offset = 0
+            buf = b""
+            chunk_size = 64 * 1024
+
             while True:
-                offset = f.tell()
-                remaining_bytes = file_size - offset
+                more = f.read(chunk_size)
+                if more:
+                    buf += more
 
-                if remaining_bytes == 0:
+                if not buf:
                     break
 
-                if remaining_bytes < HEADER_SIZE + CRC_SIZE:
-                    # Incomplete tail header at EOF
-                    break
+                progress = False
+                while True:
+                    if len(buf) < HEADER_SIZE + CRC_SIZE:
+                        break
 
-                # Read remaining contents from current offset
-                data = f.read()
-                if not data:
-                    break
+                    try:
+                        record, bytes_read = Record.deserialize_from_bytes(buf)
+                        yield (offset, record)
+                        offset += bytes_read
+                        buf = buf[bytes_read:]
+                        progress = True
+                    except CorruptionError as ce:
+                        if stop_on_corruption or (offset + HEADER_SIZE + CRC_SIZE <= file_size):
+                            raise ce
+                        buf = b""
+                        break
+                    except StorageError as se:
+                        if stop_on_corruption or (offset + HEADER_SIZE + CRC_SIZE < file_size):
+                            raise CorruptionError(f"Corrupted record at offset {offset}: {se}")
+                        break
 
-                try:
-                    record, bytes_read = Record.deserialize_from_bytes(data)
-                    f.seek(offset + bytes_read)
-                    yield (offset, record)
-                except CorruptionError as ce:
-                    if stop_on_corruption or (offset + HEADER_SIZE + CRC_SIZE <= file_size):
-                        # If corruption happens before the last incomplete record or stop_on_corruption is set
-                        raise ce
-                    break
-                except StorageError as se:
-                    # StorageError due to truncated record or oversized length
-                    if offset + HEADER_SIZE + CRC_SIZE < file_size:
-                        raise CorruptionError(f"Corrupted record length at offset {offset}: {se}")
-                    # Otherwise clean EOF truncation
+                if not more and not progress:
                     break
 
     def get_file_size(self) -> int:

@@ -473,13 +473,14 @@
                     <div class="card-title">SQL Query Console</div>
                     <div class="presets">
                         <button class="preset-btn" onclick="loadPreset('CREATE')">CREATE TABLE</button>
+                        <button class="preset-btn" onclick="loadPreset('DROP')">DROP TABLE</button>
                         <button class="preset-btn" onclick="loadPreset('INSERT')">INSERT</button>
                         <button class="preset-btn" onclick="loadPreset('SELECT')">SELECT *</button>
                         <button class="preset-btn" onclick="loadPreset('WHERE')">WHERE</button>
                     </div>
                 </div>
                 
-                <textarea id="sql-input" id="sql-input" placeholder="Type SQL statement here (e.g. SELECT * FROM users;)"></textarea>
+                <textarea id="sql-input" placeholder="Type SQL statement here (e.g. SELECT * FROM users;)"></textarea>
                 
                 <div class="actions-bar">
                     <button class="btn-primary" onclick="executeQuery()">
@@ -560,7 +561,10 @@
                         li.innerHTML = `
                             <div class="table-item-header">
                                 <span>${tbl.table_name}</span>
-                                <span class="table-count">${tbl.row_count} rows</span>
+                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <span class="table-count">${tbl.row_count} rows</span>
+                                    <button class="icon-btn" style="color: var(--danger);" title="Drop Table" onclick="event.stopPropagation(); dropTable('${tbl.table_name}')">🗑</button>
+                                </div>
                             </div>
                             <div id="schema-${tbl.table_name}" class="schema-tree"></div>
                         `;
@@ -570,6 +574,22 @@
                 }
             } catch (err) {
                 listEl.innerHTML = '<li class="empty-state">Error loading tables</li>';
+            }
+        }
+
+        async function dropTable(tableName) {
+            if (!confirm(`Are you sure you want to drop table '${tableName}'?`)) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/tables?table=${encodeURIComponent(tableName)}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.status === 'OK') {
+                    fetchTables();
+                    fetchStats();
+                } else {
+                    alert(`Failed to drop table: ${data.error}`);
+                }
+            } catch (err) {
+                alert(`Error dropping table: ${err}`);
             }
         }
 
@@ -602,7 +622,9 @@
         function loadPreset(type) {
             const input = document.getElementById('sql-input');
             if (type === 'CREATE') {
-                input.value = 'CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, age INTEGER, is_active BOOLEAN);';
+                input.value = 'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, age INTEGER, is_active BOOLEAN);';
+            } else if (type === 'DROP') {
+                input.value = 'DROP TABLE IF EXISTS users;';
             } else if (type === 'INSERT') {
                 input.value = "INSERT INTO users VALUES (1, 'Punith', 22, TRUE);";
             } else if (type === 'SELECT') {

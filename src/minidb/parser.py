@@ -22,6 +22,13 @@ class WhereClause:
 class CreateTableQuery:
     table_name: str
     columns: List[Column]
+    if_not_exists: bool = False
+
+
+@dataclass
+class DropTableQuery:
+    table_name: str
+    if_exists: bool = False
 
 
 @dataclass
@@ -62,6 +69,7 @@ class RollbackTransactionQuery:
 
 ASTQuery = Union[
     CreateTableQuery,
+    DropTableQuery,
     InsertQuery,
     SelectQuery,
     DeleteQuery,
@@ -118,6 +126,8 @@ class Parser:
 
         if tok.type == TokenType.CREATE:
             return self._parse_create_table()
+        elif tok.type == TokenType.DROP:
+            return self._parse_drop_table()
         elif tok.type == TokenType.INSERT:
             return self._parse_insert()
         elif tok.type == TokenType.SELECT:
@@ -142,6 +152,13 @@ class Parser:
     def _parse_create_table(self) -> CreateTableQuery:
         self.expect(TokenType.CREATE)
         self.expect(TokenType.TABLE)
+
+        if_not_exists = False
+        if self.match(TokenType.IF):
+            self.expect(TokenType.NOT, "Expected NOT after IF in CREATE TABLE IF NOT EXISTS")
+            self.expect(TokenType.EXISTS, "Expected EXISTS after IF NOT in CREATE TABLE IF NOT EXISTS")
+            if_not_exists = True
+
         table_name_tok = self.expect(TokenType.IDENTIFIER, "Expected table name after CREATE TABLE")
         table_name = table_name_tok.value
 
@@ -183,7 +200,23 @@ class Parser:
         self.expect(TokenType.RPAREN, "Expected ')' after column definitions")
         self.match(TokenType.SEMICOLON)
 
-        return CreateTableQuery(table_name=table_name, columns=columns)
+        return CreateTableQuery(table_name=table_name, columns=columns, if_not_exists=if_not_exists)
+
+    def _parse_drop_table(self) -> DropTableQuery:
+        self.expect(TokenType.DROP)
+        self.expect(TokenType.TABLE)
+
+        if_exists = False
+        if self.match(TokenType.IF):
+            self.expect(TokenType.EXISTS, "Expected EXISTS after IF in DROP TABLE IF EXISTS")
+            if_exists = True
+
+        table_name_tok = self.expect(TokenType.IDENTIFIER, "Expected table name after DROP TABLE")
+        table_name = table_name_tok.value
+
+        self.match(TokenType.SEMICOLON)
+
+        return DropTableQuery(table_name=table_name, if_exists=if_exists)
 
     def _parse_insert(self) -> InsertQuery:
         self.expect(TokenType.INSERT)

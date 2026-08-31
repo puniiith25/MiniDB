@@ -13,7 +13,7 @@ import time
 import urllib.parse
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from minidb.database import Database
 from minidb.transaction import TransactionManager
@@ -26,8 +26,8 @@ WEB_DIR = Path(__file__).resolve().parent.parent.parent / "web"
 class MiniDBHTTPRequestHandler(BaseHTTPRequestHandler):
     """HTTP Request Handler for MiniDB Web Management Studio."""
 
-    db: Database = None  # Class-level reference initialized on server startup
-    tm: TransactionManager = None
+    db: Optional[Database] = None  # Class-level reference initialized on server startup
+    tm: Optional[TransactionManager] = None
 
     def log_message(self, format: str, *args: Any) -> None:
         """Custom clean HTTP access log format."""
@@ -41,7 +41,7 @@ class MiniDBHTTPRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
         self.end_headers()
         self.wfile.write(body)
 
@@ -50,7 +50,7 @@ class MiniDBHTTPRequestHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
         self.end_headers()
 
     def do_GET(self) -> None:
@@ -109,8 +109,33 @@ class MiniDBHTTPRequestHandler(BaseHTTPRequestHandler):
         else:
             self._send_json(404, {"status": "ERROR", "error": f"POST endpoint '{path}' not found"})
 
+    def do_DELETE(self) -> None:
+        """Handle HTTP DELETE requests (e.g. dropping a table)."""
+        parsed_url = urllib.parse.urlparse(self.path)
+        path = parsed_url.path
+        query_params = urllib.parse.parse_qs(parsed_url.query)
+
+        if path in ("/api/tables", "/api/table"):
+            table_name = query_params.get("table", [""])[0]
+            if not table_name:
+                self._send_json(400, {"status": "ERROR", "error": "Query parameter 'table' is required"})
+                return
+            try:
+                if self.db is None:
+                    self._send_json(500, {"status": "ERROR", "error": "Database is not initialized"})
+                    return
+                self.db.drop_table(table_name, if_exists=True)
+                self._send_json(200, {"status": "OK", "message": f"Table '{table_name}' dropped successfully"})
+            except Exception as e:
+                self._send_json(500, {"status": "ERROR", "error": str(e)})
+        else:
+            self._send_json(404, {"status": "ERROR", "error": f"DELETE endpoint '{path}' not found"})
+
     def _handle_get_tables(self) -> None:
         try:
+            if self.db is None:
+                self._send_json(500, {"status": "ERROR", "error": "Database is not initialized"})
+                return
             tables = self.db.list_tables()
             table_info = []
             for t_name in tables:
@@ -132,6 +157,9 @@ class MiniDBHTTPRequestHandler(BaseHTTPRequestHandler):
             return
 
         try:
+            if self.db is None:
+                self._send_json(500, {"status": "ERROR", "error": "Database is not initialized"})
+                return
             table = self.db.get_table(table_name)
             cols = [
                 {
@@ -148,6 +176,9 @@ class MiniDBHTTPRequestHandler(BaseHTTPRequestHandler):
 
     def _handle_get_stats(self) -> None:
         try:
+            if self.db is None:
+                self._send_json(500, {"status": "ERROR", "error": "Database is not initialized"})
+                return
             tables = self.db.list_tables()
             total_rows = 0
             for t_name in tables:
@@ -165,6 +196,9 @@ class MiniDBHTTPRequestHandler(BaseHTTPRequestHandler):
     def _execute_sql_query(self, sql: str) -> None:
         t0 = time.perf_counter()
         try:
+            if self.tm is None:
+                self._send_json(500, {"status": "ERROR", "error": "TransactionManager is not initialized"})
+                return
             ast = Parser(sql).parse()
             res = self.tm.execute_sql_query(ast)
             execution_time_ms = round((time.perf_counter() - t0) * 1000, 3)

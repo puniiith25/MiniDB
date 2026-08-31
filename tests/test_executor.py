@@ -84,6 +84,34 @@ class TestQueryExecutor(unittest.TestCase):
         self.assertEqual(res_u.rows[0]["name"], "Punith")
         self.assertEqual(res_p.rows[0]["price"], 49.99)
 
+    def test_drop_table(self):
+        self.run_sql("CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT);")
+        self.assertIn("users", self.db.list_tables())
+
+        # Drop existing table
+        res = self.run_sql("DROP TABLE users;")
+        self.assertNotIn("users", self.db.list_tables())
+        self.assertIn("dropped successfully", res.message)
+
+        # Drop non-existing table raises DatabaseError
+        with self.assertRaises(DatabaseError):
+            self.run_sql("DROP TABLE users;")
+
+        # Drop non-existing table IF EXISTS returns skipped message
+        res_if = self.run_sql("DROP TABLE IF EXISTS users;")
+        self.assertIn("skipped", res_if.message)
+
+    def test_create_table_if_not_exists(self):
+        self.run_sql("CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT);")
+
+        # Creating existing table without IF NOT EXISTS raises error
+        with self.assertRaises(DatabaseError):
+            self.run_sql("CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT);")
+
+        # Creating existing table WITH IF NOT EXISTS succeeds with skipped message
+        res = self.run_sql("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT);")
+        self.assertIn("already exists", res.message)
+
 
 if __name__ == "__main__":
     unittest.main()
